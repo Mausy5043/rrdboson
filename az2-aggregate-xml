@@ -1,0 +1,33 @@
+#! /bin/bash
+
+SPOOL=/srv/array1/dataspool
+xml=/tmp/netstatus.xml
+
+#XML
+echo '<?xml version="1.0" encoding="ISO-8859-1"?>' > $xml
+echo "<sysdata>" >> $xml
+
+# 0.RASPBERRY
+cat $SPOOL/rbian/status.xml >> $xml
+
+# 1.RASPBMC
+cat $SPOOL/rxbmc/status.xml >> $xml
+
+# 2.NEUTRON
+cat $SPOOL/neutron/status.xml >> $xml
+
+# 3.BOSON
+cat $SPOOL/boson/status.xml >> $xml
+
+# 4.RBUPS
+cat $SPOOL/rbups/status.xml >> $xml
+
+# 5.RBELEC
+cat $SPOOL/rbelec/status.xml >> $xml
+
+# 6.BEAGLEBONE
+cat $SPOOL/bbone/status.xml >> $xml
+
+echo "</sysdata>" >> $xml
+
+mv $xml /var/www/status/servers.xml

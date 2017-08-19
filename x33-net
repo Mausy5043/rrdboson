@@ -1,0 +1,182 @@
+#! /bin/bash
+
+#renice 19 -p $$ >/dev/null
+#ionice -c 3 -p $$
+
+mkgrph ()
+{
+ dbFile=$DATASTORE/$HOST"/13-nettraffic.rrd"
+ outDir="/tmp/"$HOST
+
+ # 1. 1min resolution for 24 hours =    1:1440 (1*60*24)              ->1hr graph
+ hour=60
+ # 2. 5min resolution for 7 days   =    5:2016 (1/5 * 60*24*7)        ->1dy graph
+ day=300
+ # 3. 1hr resolution for 4 wks     =   60:672  (1/60 * 60*24*7*4)     ->1wk graph
+ week=3600
+ # 4. 3hr resolution for 4 months  =  180:976  (1/180 * 60*24*30.5*4) ->1mon graph
+ month=10800
+ # 5. 1dy resolution for 2 yrs     = 1440:732  (1/1440 * 60*24*366*2) ->1yr graph
+ year=86400
+
+ if [ -e $dbFile ]; then
+  rrdtool graph $outDir.$if"net-1h.png"         \
+  --start 'now - 1h' -e 'now'                   \
+  -S $hour                                      \
+  -w 200                                        \
+  --alt-autoscale                               \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  DEF:$if"Irg="$dbFile:$if"In":AVERAGE           \
+  DEF:$if"Org="$dbFile:$if"Out":AVERAGE         \
+  CDEF:$if"Out="$if"Org,8,*"                   \
+  CDEF:$if"In="$if"Irg,-8,*"                   \
+  AREA:$if"In#F70000:"$if" download"                  \
+  AREA:$if"Out#0000F7:"$if" upload"                \
+  LINE1:0#101010
+
+  rrdtool graph $outDir.$if"net-1d.png"         \
+  --start 'now - 24h' -e 'now'                  \
+  -S $day                                       \
+  --alt-autoscale                               \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  DEF:$if"Irg="$dbFile:$if"In":AVERAGE           \
+  DEF:$if"Org="$dbFile:$if"Out":AVERAGE         \
+  DEF:$if"IrgMax="$dbFile:$if"In":MAX            \
+  DEF:$if"OrgMax="$dbFile:$if"Out":MAX          \
+  CDEF:$if"Out="$if"Org,8,*"                   \
+  CDEF:$if"OutMax="$if"OrgMax,8,*"             \
+  CDEF:$if"In="$if"Irg,-8,*"                   \
+  CDEF:$if"InMax="$if"IrgMax,-8,*"             \
+  AREA:$if"InMax#F7BABA"                        \
+  AREA:$if"OutMax#BABAF7"                       \
+  LINE1:$if"In#F70000:"$if" download"                 \
+  LINE1:$if"Out#0000F7:"$if" upload"               \
+  LINE1:0#101010
+
+  rrdtool graph $outDir.$if"net-1w.png"         \
+  --start 'now - 1w' -e 'now'                   \
+  -S $week                                      \
+  --alt-autoscale                               \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  --vertical-label "[bits/s]"                \
+  DEF:$if"Irg="$dbFile:$if"In":AVERAGE           \
+  DEF:$if"Org="$dbFile:$if"Out":AVERAGE         \
+  DEF:$if"IrgMax="$dbFile:$if"In":MAX            \
+  DEF:$if"OrgMax="$dbFile:$if"Out":MAX          \
+  CDEF:$if"Out="$if"Org,8,*"                   \
+  CDEF:$if"OutMax="$if"OrgMax,8,*"             \
+  CDEF:$if"In="$if"Irg,-8,*"                   \
+  CDEF:$if"InMax="$if"IrgMax,-8,*"             \
+  LINE1:$if"In#F70000:"$if" download"                 \
+  LINE1:$if"Out#0000F7:"$if" upload"               \
+  LINE1:0#101010
+
+  rrdtool graph $outDir.$if"net-1m.png"         \
+  --start 'now - 1 month' -e 'now'              \
+  -S $month                                     \
+  --alt-autoscale                               \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  DEF:$if"Irg="$dbFile:$if"In":AVERAGE           \
+  DEF:$if"Org="$dbFile:$if"Out":AVERAGE         \
+  DEF:$if"IrgMax="$dbFile:$if"In":MAX            \
+  DEF:$if"OrgMax="$dbFile:$if"Out":MAX          \
+  CDEF:$if"Out="$if"Org,8,*"                   \
+  CDEF:$if"OutMax="$if"OrgMax,8,*"             \
+  CDEF:$if"In="$if"Irg,-8,*"                   \
+  CDEF:$if"InMax="$if"IrgMax,-8,*"             \
+  LINE1:$if"In#F70000:"$if" download"                 \
+  LINE1:$if"Out#0000F7:"$if" upload"               \
+  LINE1:0#101010
+
+  rrdtool graph $outDir.$if"net-1y.png"         \
+  --start 'now - 1 year' -e 'now'               \
+  -S $year                                      \
+  --alt-autoscale                               \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  --vertical-label "[bits/s]"                \
+  DEF:$if"Irg="$dbFile:$if"In":AVERAGE           \
+  DEF:$if"Org="$dbFile:$if"Out":AVERAGE         \
+  DEF:$if"IrgMax="$dbFile:$if"In":MAX            \
+  DEF:$if"OrgMax="$dbFile:$if"Out":MAX          \
+  CDEF:$if"Out="$if"Org,8,*"                   \
+  CDEF:$if"OutMax="$if"OrgMax,8,*"             \
+  CDEF:$if"In="$if"Irg,-8,*"                   \
+  CDEF:$if"InMax="$if"IrgMax,-8,*"             \
+  LINE1:$if"In#F70000:"$if" download"                 \
+  LINE1:$if"Out#0000F7:"$if" upload"               \
+  LINE1:0#101010
+
+
+
+#  convert $outDir".lonet-1h.png" -chop '20x0+2+0' $outDir".lonet-1h.png"
+#  convert $outDir".load-cpu-1d.png" -chop '20x0+2+0' $outDir".load-cpu-1d.png"
+#  convert $outDir".load-cpu-1w.png" -chop '20x0+2+0' $outDir".load-cpu-1w.png"
+#  convert $outDir".load-cpu-1m.png" -chop '20x0+2+0' $outDir".load-cpu-1m.png"
+#  convert $outDir".load-cpu-1y.png" -chop '20x0+2+0' $outDir".load-cpu-1y.png"
+
+ fi
+}
+
+DATASTORE="/srv/array1/datastore"
+HOST="boson"
+if="lo"
+mkgrph >/dev/null
+if="et"
+mkgrph >/dev/null
+#if="wl"
+#mkgrph >/dev/null
+
+HOST="rbian"
+#if="lo"
+#mkgrph >/dev/null
+#if="et"
+#mkgrph >/dev/null
+#if="wl"
+#mkgrph >/dev/null
+
+HOST="rbups"
+#if="lo"
+#mkgrph >/dev/null
+#if="et"
+#mkgrph >/dev/null
+#if="wl"
+#mkgrph >/dev/null
+
+HOST="rbelec"
+#if="lo"
+#mkgrph >/dev/null
+#if="et"
+#mkgrph >/dev/null
+#if="wl"
+#mkgrph >/dev/null
+
+HOST="rxbmc"
+#if="lo"
+#mkgrph >/dev/null
+#if="et"
+#mkgrph >/dev/null
+#if="wl"
+#mkgrph >/dev/null
+
+HOST="neutron"
+#if="lo"
+#mkgrph >/dev/null
+#if="et"
+#mkgrph >/dev/null
+#if="wl"
+#mkgrph >/dev/null
+
+HOST="bbone"
+#if="lo"
+#mkgrph >/dev/null
+#if="et"
+#mkgrph >/dev/null
+#if="wl"
+#mkgrph >/dev/null
+
+

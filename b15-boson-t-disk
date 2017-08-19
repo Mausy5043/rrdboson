@@ -1,0 +1,84 @@
+#! /usr/bin/env gnuplot
+
+reset
+
+set macro
+set datafile missing "NaN"
+set terminal png size 2800,560
+
+infile = "'/tmp/15-tempdisk.plt.dat'"
+outfile = "'/tmp/boson.15-t-disk.png'"
+
+stats @infile using 3:4 nooutput
+hda_max=STATS_max_y
+hda_min=STATS_min_y
+stats @infile using 3:5 nooutput
+hdb_max=STATS_max_y
+hdb_min=STATS_min_y
+stats @infile using 3:6 nooutput
+hdc_max=STATS_max_y
+hdc_min=STATS_min_y
+stats @infile using 3:7 nooutput
+hdd_max=STATS_max_y
+hdd_min=STATS_min_y
+stats @infile using 3:8 nooutput
+hde_max=STATS_max_y
+hde_min=STATS_min_y
+
+samples(x) = 6
+#$0 > 5 ? 6 : ($0+1)
+avg6(x) = (shift6(x), (back1+back2+back3+back4+back5+back6)/samples($0))
+shift6(x) = (back6 = back5, back5 = back4, back4 = back3, back3 = back2, back2 = back1, back1 = x)
+init(x) = (back1 = back2 = back3 = back4 = back5 = back6 = sum = STATS_mean_y)
+
+# X-axis
+set xdata time
+set xrange [STATS_min_x-946684800:STATS_max_x-946684800]
+set timefmt '%s'
+set format x '%d-%m'
+
+#Y-axis
+max_y = hda_max
+  if (hdb_max > max_y) max_y = hdb_max
+  if (hdc_max > max_y) max_y = hdc_max
+  if (hdd_max > max_y) max_y = hdd_max
+  if (hde_max > max_y) max_y = hde_max
+min_y = hda_min
+  if (hdb_min < min_y) min_y = hdb_min
+  if (hdc_min < min_y) min_y = hdc_min
+  if (hdd_min < min_y) min_y = hdd_min
+  if (hde_min < min_y) min_y = hde_min
+set yrange [min_y-1:max_y+1]
+
+# Add timestamp
+set timestamp "%Y-%m-%dT%T%z"
+# legend
+set key outside center bottom horizontal 
+
+#Styles
+set style line 1 lt rgb "red"    lw 0.1
+set style line 2 lt rgb "orange" lw 0.1
+set style line 3 lt rgb "yellow" lw 0.1
+set style line 4 lt rgb "green"  lw 0.1
+set style line 5 lt rgb "cyan"   lw 0.1
+set style line 6 lt rgb "blue"   lw 0.1
+set style line 7 lt rgb "violet" lw 0.1
+set style line 8 lt rgb "#D8BFD8" lw 0.1
+set style data lines
+
+set grid
+set object 1 rectangle from graph 0,0 to graph 1,1 behind fc rgbcolor "#10000F" lw 0
+
+set output @outfile
+
+plot sum = init(0), \
+     @infile using 3:4 with lines ls 1 notitle, \
+          '' using 3:5 with lines ls 2 notitle, \
+          '' using 3:6 with lines ls 3 notitle, \
+          '' using 3:7 with lines ls 7 notitle, \
+          '' using 3:8 with lines ls 5 notitle, \
+          '' using 3:(avg6($4)) with lines ls 1 lw 2 t "diskA", \
+          '' using 3:(avg6($5)) with lines ls 2 lw 2 t "diskB", \
+          '' using 3:(avg6($6)) with lines ls 3 lw 2 t "diskC", \
+          '' using 3:(avg6($7)) with lines ls 7 lw 2 t "diskD", \
+          '' using 3:(avg6($8)) with lines ls 5 lw 2 t "diskE"

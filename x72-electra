@@ -1,0 +1,98 @@
+#! /bin/bash
+
+#renice 19 -p $$ >/dev/null
+#ionice -c 3 -p $$
+
+mkgrph ()
+{
+ dbFile=$DATASTORE/$HOST"/17-electra.rrd"
+ outDir="/tmp/"$HOST
+# outDir="/srv/array1/public/"$HOST
+ # ATTENTION: None standard periods used here!!!
+ # 1. 1min resolution for 24 hours =    1:1440 (1*60*24)              ->1hr graph
+ hour=60
+ # 2. 5min resolution for 7 days   =    5:2016 (1/5 * 60*24*7)        ->1dy graph
+ day=300
+ # 3. 1hr resolution for 4 wks     =   60:672  (1/60 * 60*24*7*4)     ->1wk graph
+ week=3600
+ # 4. 3hr resolution for 4 months  =  180:976  (1/180 * 60*24*30.5*4) ->1mon graph
+ month=86400
+ # 5. 1dy resolution for 2 yrs     = 1440:732  (1/1440 * 60*24*366*2) ->1yr graph
+ #year=86400
+ year=604800
+
+def1=" DEF:PwrIn1=$dbFile:PwrIn1:AVERAGE DEF:PwrIn2=$dbFile:PwrIn2:AVERAGE DEF:PinAct=$dbFile:PinAct:AVERAGE DEF:tarif=$dbFile:tarif:AVERAGE DEF:switch=$dbFile:switch:AVERAGE  "
+calc=" CDEF:P1in=PwrIn1,3600,* CDEF:P2in=PwrIn2,3600,*"
+
+ if [ -e $dbFile ]; then
+  rrdtool graph $outDir".electra-1h.png"       \
+  --start 'now - 1h' -e 'now'                   \
+  -S $hour                                      \
+  -w 200                                        \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  $def1     \
+  $calc     \
+  VDEF:Pwr=PinAct,LAST  \
+  AREA:P1in#00FF00:"T1 [Wh/min]"  \
+  AREA:P2in#FFFF00:"T2 [Wh/min]":STACK  \
+  LINE1:PinAct#000000  \
+  TEXTALIGN:right  \
+  GPRINT:Pwr:"Now\: %6.2lf %SW"
+
+  rrdtool graph $outDir".electra-1d.png"       \
+  --start 'now - 24h' -e 'now'                   \
+  -S $day                                      \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  $def1     \
+  $calc     \
+  AREA:P1in#00FF00:"T1 [avg.Wh/5min]"  \
+  AREA:P2in#FFFF00:"T2 [avg.Wh/5min]":STACK
+
+  rrdtool graph $outDir".electra-1w.png"       \
+  --start 'now - 7d' -e 'now'                   \
+  -S $week                                      \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  $def1     \
+  $calc     \
+  AREA:P1in#00FF00:"T1 [avg.Wh/hr]"  \
+  AREA:P2in#FFFF00:"T2 [avg.Wh/hr]":STACK
+
+
+calc=" CDEF:P1in=PwrIn1,3600,*,24,* CDEF:P2in=PwrIn2,3600,*,24,*"
+
+  rrdtool graph $outDir".electra-1m.png"       \
+  --start 'now - 1 month' -e 'now'                   \
+  -S $month                                      \
+  --disable-rrdtool-tag                         \
+  --lower-limit 0 \
+  --rigid \
+  --watermark "`date`"                          \
+  $def1     \
+  $calc     \
+  AREA:P1in#00FF00:"T1 [avg.kWh/dy]"  \
+  AREA:P2in#FFFF00:"T2 [avg kWh/dy]":STACK
+
+calc=" CDEF:P1in=PwrIn1,3600,*,24,*,7,* CDEF:P2in=PwrIn2,3600,*,24,*,7,*"
+
+  rrdtool graph $outDir".electra-1y.png"       \
+  --start 'now - 1y' -e 'now'                   \
+  -S $year                                      \
+  --disable-rrdtool-tag                         \
+  --lower-limit 0 \
+  --rigid   \
+  --watermark "`date`"                          \
+  $def1     \
+  $calc     \
+  AREA:P1in#00FF00:"T1 [avg.kWh/wk]"  \
+  AREA:P2in#FFFF00:"T2 [avg.kWh/wk]":STACK
+
+ fi
+}
+
+DATASTORE="/srv/array1/datastore"
+HOST="rbelec"
+#mkgrph >/dev/null
+

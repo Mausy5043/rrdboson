@@ -1,0 +1,24 @@
+#! /bin/bash
+
+TARGETDRIVE=/srv/array1/dataspool
+HOST="boson"
+errFile=/tmp/err.err
+xml=/tmp/status.xml
+
+renice 19 -p $$ >/dev/null
+ionice -c 3 -p $$
+
+# Create our own lock
+touch $TARGETDRIVE/$HOST/client.lock
+
+# Check for the presence of the 'host.lock' file.
+if [ ! -e $TARGETDRIVE/$HOST/host.lock ]; then
+  # move the data
+  mv /tmp/*.csv $TARGETDRIVE/$HOST/
+  mv $xml $TARGETDRIVE/$HOST/
+  cp /tmp/*.err $TARGETDRIVE/$HOST/
+  # remove the lock
+  rm $TARGETDRIVE/$HOST/client.lock
+fi
+
+#logger -p local7.info -t 99-upload-data "Data uploaded ($$)"

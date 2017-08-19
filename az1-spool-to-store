@@ -1,0 +1,108 @@
+#! /bin/bash
+
+SPOOL=/srv/array1/dataspool
+STORE=/srv/array1/datastore
+
+#renice 19 -p $$ >/dev/null
+#ionice -c 3 -p $$
+
+# Move the data from the spool-area to the data-store
+HOST="boson"
+
+if [ -e $SPOOL/$HOST/host.lock ]; then
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   cat $data >> $csv
+   rm $data
+ done
+fi
+# Always remove the lock
+rm $SPOOL/$HOST/host.lock 2>/dev/null
+umask 002;touch $SPOOL/$HOST/client.lock 2>/dev/null
+#chown beheer:beheer $SPOOL/$HOST/client.lock
+
+HOST="rbian"
+
+if [ -e $SPOOL/$HOST/host.lock ]; then
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   cat $data >> $csv
+   rm $data
+ done
+ mv $SPOOL/$HOST/*.png /var/www/weer/
+fi
+rm $SPOOL/$HOST/host.lock 2>/dev/null
+umask 002;touch $SPOOL/$HOST/client.lock 2>/dev/null
+chown beheer:users $SPOOL/$HOST/client.lock
+
+HOST="rbelec"
+
+if [ -e $SPOOL/$HOST/host.lock ]; then
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   cat $data >> $csv
+   rm $data
+ done
+fi
+rm $SPOOL/$HOST/host.lock 2>/dev/null
+umask 002;touch $SPOOL/$HOST/client.lock 2>/dev/null
+chown beheer:users $SPOOL/$HOST/client.lock
+
+HOST="rbups"
+
+if [  -e $SPOOL/$HOST/host.lock ]; then
+ touch $SPOOL/$HOST/host.lock
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   cat $data >> $csv
+   rm $data
+ done
+fi
+rm $SPOOL/$HOST/host.lock 2>/dev/null
+umask 002;touch $SPOOL/$HOST/client.lock 2>/dev/null
+chown beheer:beheer $SPOOL/$HOST/client.lock
+
+HOST="rxbmc"
+
+if [ -e $SPOOL/$HOST/host.lock ]; then
+ touch $SPOOL/$HOST/host.lock
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   cat $data >> $csv
+   rm $data
+ done
+fi
+rm $SPOOL/$HOST/host.lock 2>/dev/null
+umask 002;touch $SPOOL/$HOST/client.lock 2>/dev/null
+chown beheer:beheer $SPOOL/$HOST/client.lock
+
+HOST="neutron"
+
+if [ -e $SPOOL/$HOST/host.lock ]; then
+ touch $SPOOL/$HOST/host.lock
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   cat $data >> $csv
+   rm $data
+ done
+fi
+rm $SPOOL/$HOST/host.lock 2>/dev/null
+umask 002;touch $SPOOL/$HOST/client.lock 2>/dev/null
+#chown beheer:beheer $SPOOL/$HOST/client.lock
+
+HOST="bbone"
+
+if [ -e $SPOOL/$HOST/host.lock ]; then
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   cat $data >> $csv
+   rm $data
+ done
+ chown beheer:users $SPOOL/$HOST/*.png
+ mv $SPOOL/$HOST/*.png /var/www/weer/
+fi
+rm $SPOOL/$HOST/host.lock 2>/dev/null
+umask 002;touch $SPOOL/$HOST/client.lock 2>/dev/null
+chown beheer:users $SPOOL/$HOST/client.lock
+
+logger -p local7.info -t dataharvester  "az1 - Data was moved ($$)"

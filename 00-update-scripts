@@ -1,0 +1,18 @@
+#! /bin/bash
+
+SOURCEDRIVE=/srv/array1/rbin
+HOST="boson"
+errFile=/tmp/err.err
+
+renice 19 -p $$ >/dev/null
+ionice -c 3 -p $$
+
+# Check for the 'flag' file which should indicate that
+# updated scripts are present.
+if [ -e $SOURCEDRIVE/$HOST/run/flag ]; then
+    # Copy the scripts and remove the flag.
+    cp $SOURCEDRIVE/$HOST/run/* /home/beheer/bin/run/
+    rm $SOURCEDRIVE/$HOST/run/flag
+    rm /home/beheer/bin/run/flag
+    logger -p local7.info -t dataharvester "00 - New scripts downloaded ($$)"
+fi

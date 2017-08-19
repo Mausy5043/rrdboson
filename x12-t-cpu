@@ -1,0 +1,131 @@
+#! /bin/bash
+
+#renice 19 -p $$ >/dev/null
+#ionice -c 3 -p $$
+
+mkgrph ()
+{
+ dbFile=$DATASTORE/$HOST"/11-t-cpu.rrd"
+ outDir="/tmp/"$HOST
+
+ # temperature samples consolidations provided
+ ds1="DS:t_cpu:GAUGE:360:U:U"
+ ds2="DS:t_sys:GAUGE:360:U:U"
+ # 1. 1min resolution for 24 hours =    1:1440 (1*60*24)              ->1hr graph
+ hour=60
+ # 2. 5min resolution for 7 days   =    5:2016 (1/5 * 60*24*7)        ->1dy graph
+ day=300
+ # 3. 1hr resolution for 4 wks     =   60:672  (1/60 * 60*24*7*4)     ->1wk graph
+ week=3600
+ # 4. 3hr resolution for 4 months  =  180:976  (1/180 * 60*24*30.5*4) ->1mon graph
+ month=10800
+ # 5. 1dy resolution for 2 yrs     = 1440:732  (1/1440 * 60*24*366*2) ->1yr graph
+ year=86400
+
+ if [ -e $dbFile ]; then
+  rrdtool graph $outDir".t-cpu-1h.png"          \
+  --start 'now - 1h' -e 'now'                   \
+  -S $hour                                      \
+  -w 200                                        \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  DEF:cpu=$dbFile:t_cpu:AVERAGE                 \
+  DEF:sys=$dbFile:t_sys:AVERAGE                 \
+  LINE1:cpu#FF0000:"T(cpu)"                     \
+  LINE1:sys#0000FF:"T(system)"
+
+  rrdtool graph $outDir".t-cpu-1d.png"          \
+  --start 'now - 24h' -e 'now'                  \
+  -S $day                                       \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  DEF:tcpu=$dbFile:t_cpu:AVERAGE                \
+  DEF:tsys=$dbFile:t_sys:AVERAGE                \
+  DEF:tcmin=$dbFile:t_cpu:MIN                   \
+  DEF:tsmin=$dbFile:t_sys:MIN                   \
+  DEF:tcmax=$dbFile:t_cpu:MAX                   \
+  DEF:tsmax=$dbFile:t_sys:MAX                   \
+  CDEF:tcrng=tcmax,tcmin,-                      \
+  CDEF:tsrng=tsmax,tsmin,-                      \
+  LINE1:tcmin                                   \
+  AREA:tcrng#BABAF7::STACK                      \
+  LINE1:tcpu#FF0000:"T(cpu)"                    \
+  LINE1:tsmin                                   \
+  AREA:tsrng#F7BAF7::STACK                      \
+  LINE1:tsys#0000FF:"T(system)"
+
+  rrdtool graph $outDir".t-cpu-1w.png"          \
+  --start 'now - 1w' -e 'now'                   \
+  -S $week                                      \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  --vertical-label "[degC]"                     \
+  DEF:tcpu=$dbFile:t_cpu:AVERAGE                \
+  DEF:tcmin=$dbFile:t_cpu:MIN                   \
+  DEF:tcmax=$dbFile:t_cpu:MAX                   \
+  DEF:tsys=$dbFile:t_sys:AVERAGE                \
+  DEF:tsmin=$dbFile:t_sys:MIN                   \
+  DEF:tsmax=$dbFile:t_sys:MAX                   \
+  CDEF:tcrng=tcmax,tcmin,-                      \
+  CDEF:tsrng=tsmax,tsmin,-                      \
+  LINE1:tcmin                                   \
+  AREA:tcrng#BABAF7::STACK                      \
+  LINE1:tcpu#FF0000:"T(cpu)"                    \
+  LINE1:tsmin                                   \
+  AREA:tsrng#F7BAF7::STACK                      \
+  LINE1:tsys#0000FF:"T(system)"
+
+  rrdtool graph $outDir".t-cpu-1m.png"          \
+  --start 'now - 1 month' -e 'now'              \
+  -S $month                                     \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  DEF:tcpu=$dbFile:t_cpu:AVERAGE                \
+  DEF:tcmin=$dbFile:t_cpu:MIN                   \
+  DEF:tcmax=$dbFile:t_cpu:MAX                   \
+  DEF:tsys=$dbFile:t_sys:AVERAGE                \
+  DEF:tsmin=$dbFile:t_sys:MIN                   \
+  DEF:tsmax=$dbFile:t_sys:MAX                   \
+  CDEF:tcrng=tcmax,tcmin,-                      \
+  CDEF:tsrng=tsmax,tsmin,-                      \
+  LINE1:tcmin                                   \
+  AREA:tcrng#BABAF7::STACK                      \
+  LINE1:tcpu#FF0000:"T(cpu)"                    \
+  LINE1:tsmin                                   \
+  AREA:tsrng#F7BAF7::STACK                      \
+  LINE1:tsys#0000FF:"T(system)"
+
+  rrdtool graph $outDir".t-cpu-1y.png"          \
+  --start 'now - 1 year' -e 'now'               \
+  -S $year                                      \
+  --disable-rrdtool-tag                         \
+  --watermark "`date`"                          \
+  --vertical-label "[degC]"                     \
+  DEF:tcpu=$dbFile:t_cpu:AVERAGE                \
+  DEF:tcmin=$dbFile:t_cpu:MIN                   \
+  DEF:tcmax=$dbFile:t_cpu:MAX                   \
+  DEF:tsys=$dbFile:t_sys:AVERAGE                \
+  DEF:tsmin=$dbFile:t_sys:MIN                   \
+  DEF:tsmax=$dbFile:t_sys:MAX                   \
+  CDEF:tcrng=tcmax,tcmin,-                      \
+  CDEF:tsrng=tsmax,tsmin,-                      \
+  LINE1:tcmin                                   \
+  AREA:tcrng#BABAF7::STACK                      \
+  LINE1:tcpu#FF0000:"T(cpu)"                    \
+  LINE1:tsmin                                   \
+  AREA:tsrng#F7BAF7::STACK                      \
+  LINE1:tsys#0000FF:"T(system)"
+
+#  convert $outDir".t-cpu-1h.png" -chop '20x0+2+0' $outDir".t-cpu-1h.png"
+#  convert $outDir".t-cpu-1d.png" -chop '20x0+2+0' $outDir".t-cpu-1d.png"
+#  convert $outDir".t-cpu-1w.png" -chop '20x0+2+0' $outDir".t-cpu-1w.png"
+#  convert $outDir".t-cpu-1m.png" -chop '20x0+2+0' $outDir".t-cpu-1m.png"
+#  convert $outDir".t-cpu-1y.png" -chop '20x0+2+0' $outDir".t-cpu-1y.png"
+
+ fi
+}
+
+DATASTORE="/srv/array1/datastore"
+HOST="boson"
+mkgrph >/dev/null
+

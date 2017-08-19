@@ -1,0 +1,6 @@
+#! /bin/bash
+
+# Throw away datafiles
+rm /tmp/*.plt.dat
+# Move the images to the webserver
+mv /tmp/boson.*.png /var/www/status/

@@ -1,0 +1,6 @@
+#! /bin/bash
+
+#renice 19 -p $$ >/dev/null
+#ionice -c 3 -p $$
+
+logger -p local7.info -t dataharvester  "zz - Finished ($$)"

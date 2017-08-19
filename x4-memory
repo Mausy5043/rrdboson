@@ -1,0 +1,138 @@
+#! /bin/bash
+
+#renice 19 -p $$ >/dev/null
+#ionice -c 3 -p $$
+
+mkgrph ()
+{
+ dbFile=$DATASTORE/$HOST"/14-memory.rrd"
+ outDir="/tmp/"$HOST
+# outDir="/srv/array1/public/"$HOST
+
+ # 1. 1min resolution for 24 hours =    1:1440 (1*60*24)              ->1hr graph
+ hour=60
+ # 2. 5min resolution for 7 days   =    5:2016 (1/5 * 60*24*7)        ->1dy graph
+ day=300
+ # 3. 1hr resolution for 4 wks     =   60:672  (1/60 * 60*24*7*4)     ->1wk graph
+ week=3600
+ # 4. 3hr resolution for 4 months  =  180:976  (1/180 * 60*24*30.5*4) ->1mon graph
+ month=10800
+ # 5. 1dy resolution for 2 yrs     = 1440:732  (1/1440 * 60*24*366*2) ->1yr graph
+ year=86400
+
+def1=" DEF:mMU=$dbFile:memUsed:AVERAGE DEF:mMC=$dbFile:memCache:AVERAGE DEF:mMB=$dbFile:memBuffer:AVERAGE DEF:mMF=$dbFile:memFree:AVERAGE DEF:mSU=$dbFile:swpUsed:AVERAGE DEF:mSF=$dbFile:swpFree:AVERAGE  "
+calc=" CDEF:sU=mSU,-1024,*  CDEF:sF=mSF,-1024,*  CDEF:mU=mMU,1024,* CDEF:mB=mMB,1024,* CDEF:mC=mMC,1024,* CDEF:mF=mMF,1024,*  "
+
+ if [ -e $dbFile ]; then
+  rrdtool graph $outDir".memory-1h.png"       \
+  --start 'now - 1h' -e 'now'                   \
+  -S $hour                                      \
+  -w 200                                        \
+  --alt-autoscale       \
+  --disable-rrdtool-tag                         \
+  --units-exponent 6                            \
+  --watermark "`date`"                          \
+  $def1     \
+  $calc     \
+  AREA:mU#FF0000:"Used"  \
+  AREA:mC#FFFF00:"Cached":STACK  \
+  AREA:mB#0000FF:"Buffers":STACK  \
+  AREA:mF#00AA00:"Free":STACK  \
+  LINE1:0  \
+  AREA:sU#AA0000:"Swap Used":STACK \
+  LINE0.5:0#000000
+#  AREA:sF#00FF00:"Swap Free":STACK \
+
+  rrdtool graph $outDir".memory-1d.png"       \
+  --start 'now - 24h' -e 'now'                   \
+  -S $day                                      \
+  --alt-autoscale       \
+  --disable-rrdtool-tag                         \
+  --units-exponent 6                            \
+  --watermark "`date`"                          \
+  $def1     \
+  $calc     \
+  AREA:mU#FF0000:"Used"  \
+  AREA:mC#FFFF00:"Cached":STACK  \
+  AREA:mB#0000FF:"Buffers":STACK  \
+  AREA:mF#00AA00:"Free":STACK  \
+  LINE1:0  \
+  AREA:sU#AA0000:"Swap Used":STACK \
+  LINE0.5:0#000000
+
+  rrdtool graph $outDir".memory-1w.png"       \
+  --start 'now - 7d' -e 'now'                   \
+  -S $week                                      \
+  --alt-autoscale       \
+  --disable-rrdtool-tag                         \
+  --units-exponent 6                            \
+  --watermark "`date`"                          \
+  $def1     \
+  $calc     \
+  AREA:mU#FF0000:"Used"  \
+  AREA:mC#FFFF00:"Cached":STACK  \
+  AREA:mB#0000FF:"Buffers":STACK  \
+  AREA:mF#00AA00:"Free":STACK  \
+  LINE1:0  \
+  AREA:sU#AA0000:"Swap Used":STACK \
+  LINE0.5:0#000000
+
+  rrdtool graph $outDir".memory-1m.png"       \
+  --start 'now - 1 month' -e 'now'                   \
+  -S $month                                      \
+  --alt-autoscale       \
+  --disable-rrdtool-tag                         \
+  --units-exponent 6                            \
+  --watermark "`date`"                          \
+  $def1     \
+  $calc     \
+  AREA:mU#FF0000:"Used"  \
+  AREA:mC#FFFF00:"Cached":STACK  \
+  AREA:mB#0000FF:"Buffers":STACK  \
+  AREA:mF#00AA00:"Free":STACK  \
+  LINE1:0  \
+  AREA:sU#AA0000:"Swap Used":STACK \
+  LINE0.5:0#000000
+
+  rrdtool graph $outDir".memory-1y.png"       \
+  --start 'now - 1y' -e 'now'                   \
+  -S $year                                      \
+  --alt-autoscale       \
+  --disable-rrdtool-tag                         \
+  --units-exponent 6                            \
+  --watermark "`date`"                          \
+  $def1     \
+  $calc     \
+  AREA:mU#FF0000:"Used"  \
+  AREA:mC#FFFF00:"Cached":STACK  \
+  AREA:mB#0000FF:"Buffers":STACK  \
+  AREA:mF#00AA00:"Free":STACK  \
+  LINE1:0  \
+  AREA:sU#AA0000:"Swap Used":STACK \
+  LINE0.5:0#000000
+
+ fi
+}
+
+DATASTORE="/srv/array1/datastore"
+HOST="boson"
+mkgrph >/dev/null
+
+HOST="rbian"
+#mkgrph >/dev/null
+
+HOST="rbups"
+#mkgrph >/dev/null
+
+HOST="rbelec"
+#mkgrph >/dev/null
+
+HOST="rxbmc"
+#mkgrph >/dev/null
+
+HOST="neutron"
+#mkgrph >/dev/null
+
+HOST="bbone"
+#mkgrph >/dev/null
+

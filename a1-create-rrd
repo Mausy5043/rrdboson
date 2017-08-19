@@ -1,0 +1,516 @@
+#! /bin/bash
+
+renice 19 -p $$ >/dev/null
+ionice -c 3 -p $$
+
+DATASTORE="/srv/array1/datastore"
+rra_avg="RRA:AVERAGE:0.5"
+rra_min="RRA:MIN:0.5"
+rra_max="RRA:MAX:0.5"
+
+# 1. 1min resolution for 24 hours =    1:1440 (1*60*24)              ->1hr graph
+hour="1:1440"
+# 2. 5min resolution for 7 days   =    5:2016 (1/5 * 60*24*7)        ->1dy graph
+day="5:2016"
+# 3. 1hr resolution for 4 wks     =   60:672  (1/60 * 60*24*7*4)     ->1wk graph
+week="60:672"
+# 4. 3hr resolution for 4 months  =  180:976  (1/180 * 60*24*30.5*4) ->1mon graph
+month="180:976"
+# 5. 1dy resolution for 2 yrs     = 1440:732  (1/1440 * 60*24*366*2) ->1yr graph
+year="1440:732"
+
+mkdb1 ()
+{
+ dbFile=$DATASTORE/$HOST/$datafile.rrd
+ csvFile=$DATASTORE/$HOST/$datafile.csv
+ if [ ! -e $dbFile ]; then
+   rrdtool create $dbFile    \
+   --start 1000000000        \
+   --step 60                 \
+   $ds1                      \
+   $rra_avg:$hour            \
+   $rra_avg:$day             \
+   $rra_avg:$week            \
+   $rra_avg:$month           \
+   $rra_avg:$year            \
+   $rra_max:$hour            \
+   $rra_max:$day             \
+   $rra_max:$week            \
+   $rra_max:$month           \
+   $rra_max:$year            \
+   $rra_min:$hour            \
+   $rra_min:$day             \
+   $rra_min:$week            \
+   $rra_min:$month           \
+   $rra_min:$year
+
+   # populate the database
+   /home/beheer/bin/injectrrd.py $csvFile $dbFile >>/tmp/inject.err
+
+   logger -p local7.info -t dataharvester "a1 - New db1 database ($dbFile) created ($$)"
+ fi
+}
+
+mkdb2 ()
+{
+ dbFile=$DATASTORE/$HOST/$datafile.rrd
+ csvFile=$DATASTORE/$HOST/$datafile.csv
+ if [ ! -e $dbFile ]; then
+   rrdtool create $dbFile    \
+   --start 1000000000        \
+   --step 60                 \
+   $ds1                      \
+   $ds2                      \
+   $rra_avg:$hour            \
+   $rra_avg:$day             \
+   $rra_avg:$week            \
+   $rra_avg:$month           \
+   $rra_avg:$year            \
+   $rra_max:$hour            \
+   $rra_max:$day             \
+   $rra_max:$week            \
+   $rra_max:$month           \
+   $rra_max:$year            \
+   $rra_min:$hour            \
+   $rra_min:$day             \
+   $rra_min:$week            \
+   $rra_min:$month           \
+   $rra_min:$year
+
+   # populate the database
+   /home/beheer/bin/injectrrd.py $csvFile $dbFile >>/tmp/inject.err
+
+   logger -p local7.info -t dataharvester "a1 - New db2 database ($dbFile) created ($$)"
+ fi
+}
+
+mkdb4 ()
+{
+ dbFile=$DATASTORE/$HOST/$datafile.rrd
+ csvFile=$DATASTORE/$HOST/$datafile.csv
+ if [ ! -e $dbFile ]; then
+   rrdtool create $dbFile    \
+   --start 1000000000        \
+   --step 60                 \
+   $ds1                      \
+   $ds2                      \
+   $ds3                      \
+   $ds4                      \
+   $rra_avg:$hour            \
+   $rra_avg:$day             \
+   $rra_avg:$week            \
+   $rra_avg:$month           \
+   $rra_avg:$year            \
+   $rra_max:$hour            \
+   $rra_max:$day             \
+   $rra_max:$week            \
+   $rra_max:$month           \
+   $rra_max:$year            \
+   $rra_min:$hour            \
+   $rra_min:$day             \
+   $rra_min:$week            \
+   $rra_min:$month           \
+   $rra_min:$year
+
+   # populate the database
+   /home/beheer/bin/injectrrd.py $csvFile $dbFile >>/tmp/inject.err
+
+   logger -p local7.info -t dataharvester "a1 - New db4 database ($dbFile) created ($$)"
+ fi
+}
+
+mkdb5 ()
+{
+ dbFile=$DATASTORE/$HOST/$datafile.rrd
+ csvFile=$DATASTORE/$HOST/$datafile.csv
+ if [ ! -e $dbFile ]; then
+   rrdtool create $dbFile    \
+   --start 1000000000        \
+   --step 60                 \
+   $ds1                      \
+   $ds2                      \
+   $ds3                      \
+   $ds4                      \
+   $ds5                      \
+   $rra_avg:$hour            \
+   $rra_avg:$day             \
+   $rra_avg:$week            \
+   $rra_avg:$month           \
+   $rra_avg:$year            \
+   $rra_max:$hour            \
+   $rra_max:$day             \
+   $rra_max:$week            \
+   $rra_max:$month           \
+   $rra_max:$year            \
+   $rra_min:$hour            \
+   $rra_min:$day             \
+   $rra_min:$week            \
+   $rra_min:$month           \
+   $rra_min:$year
+
+   # populate the database
+   /home/beheer/bin/injectrrd.py $csvFile $dbFile >>/tmp/inject.err
+
+   logger -p local7.info -t dataharvester "a1 - New db5 database ($dbFile) created ($$)"
+ fi
+}
+
+mkdb6 ()
+{
+ dbFile=$DATASTORE/$HOST/$datafile.rrd
+ csvFile=$DATASTORE/$HOST/$datafile.csv
+ if [ ! -e $dbFile ]; then
+   rrdtool create $dbFile    \
+   --start 1000000000        \
+   --step 60                 \
+   $ds1                      \
+   $ds2                      \
+   $ds3                      \
+   $ds4                      \
+   $ds5                      \
+   $ds6                      \
+   $rra_avg:$hour            \
+   $rra_avg:$day             \
+   $rra_avg:$week            \
+   $rra_avg:$month           \
+   $rra_avg:$year            \
+   $rra_max:$hour            \
+   $rra_max:$day             \
+   $rra_max:$week            \
+   $rra_max:$month           \
+   $rra_max:$year            \
+   $rra_min:$hour            \
+   $rra_min:$day             \
+   $rra_min:$week            \
+   $rra_min:$month           \
+   $rra_min:$year
+
+   # populate the database
+   /home/beheer/bin/injectrrd.py $csvFile $dbFile >>/tmp/inject.err
+
+   logger -p local7.info -t dataharvester "a1 - New db6 database ($dbFile) created ($$)"
+ fi
+}
+
+mkdb7 ()
+{
+ dbFile=$DATASTORE/$HOST/$datafile.rrd
+ csvFile=$DATASTORE/$HOST/$datafile.csv
+ if [ ! -e $dbFile ]; then
+   rrdtool create $dbFile    \
+   --start 1000000000        \
+   --step 60                 \
+   $ds1                      \
+   $ds2                      \
+   $ds3                      \
+   $ds4                      \
+   $ds5                      \
+   $ds6                      \
+   $ds7                      \
+   $rra_avg:$hour            \
+   $rra_avg:$day             \
+   $rra_avg:$week            \
+   $rra_avg:$month           \
+   $rra_avg:$year            \
+   $rra_max:$hour            \
+   $rra_max:$day             \
+   $rra_max:$week            \
+   $rra_max:$month           \
+   $rra_max:$year            \
+   $rra_min:$hour            \
+   $rra_min:$day             \
+   $rra_min:$week            \
+   $rra_min:$month           \
+   $rra_min:$year
+
+   # populate the database
+   /home/beheer/bin/injectrrd.py $csvFile $dbFile >>/tmp/inject.err
+
+   logger -p local7.info -t dataharvester "a1 - New db7 database ($dbFile) created ($$)"
+ fi
+}
+
+mkdb8 ()
+{
+ dbFile=$DATASTORE/$HOST/$datafile.rrd
+ csvFile=$DATASTORE/$HOST/$datafile.csv
+ if [ ! -e $dbFile ]; then
+   rrdtool create $dbFile    \
+   --start 1000000000        \
+   --step 60                 \
+   $ds1                      \
+   $ds2                      \
+   $ds3                      \
+   $ds4                      \
+   $ds5                      \
+   $ds6                      \
+   $ds7                      \
+   $ds8                      \
+   $rra_avg:$hour            \
+   $rra_avg:$day             \
+   $rra_avg:$week            \
+   $rra_avg:$month           \
+   $rra_avg:$year            \
+   $rra_max:$hour            \
+   $rra_max:$day             \
+   $rra_max:$week            \
+   $rra_max:$month           \
+   $rra_max:$year            \
+   $rra_min:$hour            \
+   $rra_min:$day             \
+   $rra_min:$week            \
+   $rra_min:$month           \
+   $rra_min:$year
+
+   # populate the database
+   /home/beheer/bin/injectrrd.py $csvFile $dbFile >>/tmp/inject.err
+
+   logger -p local7.info -t dataharvester "a1 - New db8 database ($dbFile) created ($$)"
+ fi
+}
+
+mkdb11 ()
+{
+ dbFile=$DATASTORE/$HOST/$datafile.rrd
+ csvFile=$DATASTORE/$HOST/$datafile.csv
+ if [ ! -e $dbFile ]; then
+   rrdtool create $dbFile    \
+   --start 1000000000        \
+   --step 60                 \
+   $ds1                      \
+   $ds2                      \
+   $ds3                      \
+   $ds4                      \
+   $ds5                      \
+   $ds6                      \
+   $ds7                      \
+   $ds8                      \
+   $ds9                      \
+   $ds10                     \
+   $ds11                     \
+   $rra_avg:$hour            \
+   $rra_avg:$day             \
+   $rra_avg:$week            \
+   $rra_avg:$month           \
+   $rra_avg:$year            \
+   $rra_max:$hour            \
+   $rra_max:$day             \
+   $rra_max:$week            \
+   $rra_max:$month           \
+   $rra_max:$year            \
+   $rra_min:$hour            \
+   $rra_min:$day             \
+   $rra_min:$week            \
+   $rra_min:$month           \
+   $rra_min:$year
+
+   # populate the database
+   /home/beheer/bin/injectrrd.py $csvFile $dbFile >>/tmp/inject.err
+
+   logger -p local7.info -t dataharvester "a1 New db11 database ($dbFile) created ($$)"
+ fi
+}
+
+##### CPU and system temperatures
+datafile="11-t-cpu"
+# datasource definition
+ds1="DS:t_cpu:GAUGE:360:U:U"
+
+HOST="rbian"
+mkdb1
+
+HOST="rbups"
+mkdb1
+
+HOST="rbelec"
+mkdb1
+
+HOST="rxbmc"
+mkdb1
+
+HOST="bbone"
+mkdb1
+
+# 2nd datasource definition
+ds2="DS:t_sys:GAUGE:360:U:U"
+HOST="boson"
+mkdb2
+
+##### System load
+datafile="12-load-cpu"
+# datasource definition
+ds1="DS:load01:GAUGE:360:0:U"
+ds2="DS:load05:GAUGE:360:0:U"
+ds3="DS:load15:GAUGE:360:0:U"
+ds4="DS:actproc:GAUGE:360:0:32768"
+ds5="DS:totproc:GAUGE:360:0:32768"
+ds6="DS:lastpid:DERIVE:360:0:32768"
+ds7="DS:user:GAUGE:360:0:110"
+ds8="DS:system:GAUGE:360:0:110"
+ds9="DS:idle:GAUGE:360:0:110"
+ds10="DS:wait:GAUGE:360:0:110"
+ds11="DS:stolen:GAUGE:360:0:110"
+HOST="boson"
+mkdb11
+
+HOST="neutron"
+mkdb11
+
+HOST="rbian"
+mkdb11
+
+HOST="rbups"
+mkdb11
+
+HOST="rbelec"
+mkdb11
+
+HOST="rxbmc"
+mkdb11
+
+HOST="bbone"
+mkdb11
+
+##### Network traffic
+datafile="13-nettraffic"
+# datasource definition
+ds1="DS:loIn:DERIVE:360:0:12500000"
+ds2="DS:loOut:DERIVE:360:0:12500000"
+ds3="DS:etIn:DERIVE:360:0:12500000"
+ds4="DS:etOut:DERIVE:360:0:12500000"
+ds5="DS:wlIn:DERIVE:360:0:12500000"
+ds6="DS:wlOut:DERIVE:360:0:12500000"
+
+HOST="rbian"
+mkdb6
+
+HOST="rbups"
+mkdb6
+
+HOST="rbelec"
+mkdb6
+
+HOST="rxbmc"
+mkdb6
+
+HOST="boson"
+mkdb6
+
+HOST="neutron"
+mkdb6
+
+HOST="bbone"
+mkdb6
+
+
+##### disk temperatures
+datafile="19-tempdisk"
+# datasource definition
+ds1="DS:disk1:GAUGE:360:-10:70"
+ds2="DS:disk2:GAUGE:360:-10:70"
+ds3="DS:disk3:GAUGE:360:-10:70"
+ds4="DS:disk4:GAUGE:360:-10:70"
+
+HOST="neutron"
+mkdb4
+
+datafile="19-tempdisk"
+# datasource definition
+ds1="DS:disk0:GAUGE:360:-10:70"
+ds2="DS:disk1:GAUGE:360:-10:70"
+ds3="DS:disk2:GAUGE:360:-10:70"
+ds4="DS:disk3:GAUGE:360:-10:70"
+ds5="DS:disk4:GAUGE:360:-10:70"
+ds6="DS:disk5:GAUGE:360:-10:70"
+ds7="DS:disk6:GAUGE:360:-10:70"
+
+HOST="boson"
+mkdb7
+
+##### Ambient conditions
+datafile="21-aux-ambient"
+# datasource definition
+ds1="DS:t_room:GAUGE:360:-50:130"
+
+HOST="boson"
+mkdb1
+
+##### Memory state
+datafile="14-memory"
+# datasource definition
+ds1="DS:memTotal:GAUGE:360:0:U"
+ds2="DS:memUsed:GAUGE:360:0:U"
+ds3="DS:memBuffer:GAUGE:360:0:U"
+ds4="DS:memCache:GAUGE:360:0:U"
+ds5="DS:memFree:GAUGE:360:0:U"
+ds6="DS:swpTotal:GAUGE:360:0:U"
+ds7="DS:swpFree:GAUGE:360:0:U"
+ds8="DS:swpUsed:GAUGE:360:0:U"
+
+HOST="boson"
+mkdb8
+
+HOST="neutron"
+mkdb8
+
+HOST="rbian"
+mkdb8
+
+HOST="rbups"
+mkdb8
+
+HOST="rbelec"
+mkdb8
+
+HOST="rxbmc"
+mkdb8
+
+HOST="bbone"
+mkdb8
+
+##### UPS data
+datafile="16-aux-ups"
+# datasource definition
+ds1="DS:Vin:GAUGE:360:170:260"
+ds2="DS:Vbat:GAUGE:360:0:15"
+ds3="DS:CHRGbat:GAUGE:360:0:100"
+ds4="DS:UPSload:GAUGE:360:0:32"
+ds5="DS:RUNbat:GAUGE:360:0:3600"
+
+HOST="rbups"
+mkdb5
+
+##### Electra
+datafile="17-electra"
+# datasource definition
+ds1="DS:PwrIn1:DERIVE:360:0:100000000"
+ds2="DS:PwrIn2:DERIVE:360:0:100000000"
+ds3="DS:PinAct:GAUGE:360:0:1000000  RRA:LAST:0.5:"$hour
+ds4="DS:PwrOut1:DERIVE:360:0:100000000"
+ds5="DS:PwrOut2:DERIVE:360:0:100000000"
+ds6="DS:PoutAct:GAUGE:360:0:1000000"
+ds7="DS:tarif:GAUGE:360:0:5"
+ds8="DS:switch:GAUGE:360:0:3"
+
+HOST="rbelec"
+mkdb8
+
+ds1="DS:krnlog:DERIVE:360:0:100000 \
+     DS:meslog:DERIVE:360:0:100000 \
+     DS:syslog:DERIVE:360:0:100000"
+
+datafile="15-cnt-loglines"
+HOST="boson"
+mkdb1
+HOST="neutron"
+mkdb1
+HOST="rbian"
+mkdb1
+HOST="rbelec"
+mkdb1
+HOST="rbups"
+mkdb1
+HOST="rxbmc"
+mkdb1
+HOST="bbone"
+mkdb1

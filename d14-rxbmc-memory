@@ -1,0 +1,54 @@
+#! /usr/bin/env gnuplot
+
+reset
+
+set macro
+set datafile missing "NaN"
+set terminal png size 2800,560
+
+infile = "'/tmp/14-memory.plt.dat'"
+outfile = "'/tmp/rxbmc.14-memory.png'"
+#outfile2 = "'/tmp/rxbmc.14-swapmemory.png'"
+
+stats @infile using 3:4 nooutput
+
+# X-axis
+set xdata time
+set xrange [STATS_min_x-946684800:STATS_max_x-946684800]
+set timefmt '%s'
+set format x '%d-%m'
+
+#Y-axis
+set yrange [0:101]
+set ytics (20,40,60,80,100)
+
+# Add timestamp
+set timestamp "%Y-%m-%dT%T%z"
+# Define legend
+set key outside center bottom horizontal 
+
+#Styles
+set style line 1 lt rgb "red"    lw 0.1
+set style line 2 lt rgb "orange" lw 0.1
+set style line 3 lt rgb "yellow" lw 0.1
+set style line 4 lt rgb "green"  lw 0.1
+set style line 5 lt rgb "cyan"   lw 0.1
+set style line 6 lt rgb "blue"   lw 0.1
+set style line 7 lt rgb "violet" lw 0.1
+set style data lines
+
+set grid
+set object 1 rectangle from graph 0,0 to graph 1,1 behind fc rgbcolor "#10000F" lw 0
+
+set output @outfile
+
+plot \
+	@infile using 3:(($8 + $6 + $7+ $5)*100/$4) t "Used" ls 1 with impulses, \
+  	     '' using 3:(($8 + $6 + $7)*100/$4)     t "Cached" ls 3 with impulses, \
+	     '' using 3:(($8 + $6)*100/$4)          t "Buffers" ls 6 with impulses, \
+	     '' using 3:($8*100/$4)                 t "Free" ls 4 with impulses
+
+#set output @outfile2
+#plot \
+#	@infile using 3:(($11 + $10)*100/$9) t "Used Swap" ls 1 with impulses, \
+#  	     '' using 3:(($10)*100/$9)     t "Free Swap" ls 4 with impulses

@@ -1,0 +1,73 @@
+#! /usr/bin/env gnuplot
+
+reset
+
+set macro
+set datafile missing "NaN"
+set terminal png size 2800,560
+
+infile = "'/tmp/13-nettraffic.plt.dat'"
+outfile = "'/tmp/boson.13-net-ext.png'"
+outfile2 = "'/tmp/boson.13-net-local.png'"
+
+stats @infile using 3:4 nooutput
+
+# data is in bytes. Provider uses bits. So we convert to bits. (*8)
+# data is in 5 minute steps. We convert to seconds (/(15*60))
+sampletime = 5 * 60
+# data is in bytes. We convert to kilo (/1024)
+# the system-byte-counter resets at 4G.
+# delta_v(x) returns Mbps
+HICOUNT = 4.0 * 1024 * 1024 * 1024
+LIMIT = 200 * 1024
+old_v = NaN
+
+dv(x) = (vD = x - old_v, old_v = x, vD)
+hidv(x) = (old_v= x, (1/0) )
+test_x(x) =  (old_v > x) ? hidv(x) : dv(x)
+delta_v(x) = ( (test_x(x) * 8) / (1024 * 1024 * sampletime))
+
+#       Mbps to kbps
+lopass(x) = (x < LIMIT) ? x : (1/0)
+
+# X-axis
+set xdata time
+set xrange [STATS_min_x-946684800:STATS_max_x-946684800]
+set timefmt '%s'
+set format x '%d-%m'
+
+#Y-axis
+set yrange [0:*]
+
+# Add timestamp
+set timestamp "%Y-%m-%dT%T%z"
+# No legend
+set key outside center bottom horizontal 
+
+#Styles
+set style line 1 lt rgb "red"    lw 0.1
+set style line 2 lt rgb "orange" lw 0.1
+set style line 3 lt rgb "yellow" lw 0.1
+set style line 4 lt rgb "green"  lw 0.1
+set style line 5 lt rgb "cyan"   lw 0.1
+set style line 6 lt rgb "blue"   lw 0.1
+set style line 7 lt rgb "violet" lw 0.1
+set style data lines
+
+set grid
+set object 1 rectangle from graph 0,0 to graph 1,1 behind fc rgbcolor "#10000F" lw 0
+
+set output @outfile
+set yrange [0:0.1]
+plot \
+	@infile using 3:(lopass(delta_v($4)) )   t "Up"  ls 5 lw 2 with impulses, \
+	     '' using 3:(lopass(delta_v($5)) )  t "Down"  ls 3 lw 2 with impulses
+
+old_v = NaN
+
+
+set output @outfile2
+set yrange [0:*]
+plot \
+	@infile using 3:(lopass(delta_v($6)) )  t "Up"  ls 5 lw 2 with impulses, \
+	     '' using 3:(lopass(delta_v($7)) )  t "Down"  ls 3 lw 2 with impulses

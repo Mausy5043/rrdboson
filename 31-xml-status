@@ -1,0 +1,80 @@
+#! /bin/bash
+
+renice 19 -p $$ >/dev/null
+ionice -c 3 -p $$
+
+xml=/tmp/status.xml
+
+sda=wwn-0x50026b723c0d6dd5
+sdb=wwn-0x5000c50050a30da3
+sdc=wwn-0x5000c50050a32d4f
+#sdd=wwn-0x5000c50052c28f7d
+sdd=wwn-0x50014ee6055a237b
+#sde=wwn-0x5000c50050f3630b
+sde=wwn-0x50014ee60507b79c
+
+a=$(sudo smartctl -A /dev/disk/by-id/$sda |grep '194 Temperature_Celsius' |awk '{print $10}')
+b=$(sudo smartctl -A /dev/disk/by-id/$sdb |grep '194 Temperature_Celsius' |awk '{print $10}')
+c=$(sudo smartctl -A /dev/disk/by-id/$sdc |grep '194 Temperature_Celsius' |awk '{print $10}')
+d=$(sudo smartctl -A /dev/disk/by-id/$sdd |grep '194 Temperature_Celsius' |awk '{print $10}')
+e=$(sudo smartctl -A /dev/disk/by-id/$sde |grep '194 Temperature_Celsius' |awk '{print $10}')
+
+pb=$(sudo smartctl -A /dev/disk/by-id/$sdb |grep '9 Power' |awk '{print $10}')
+pc=$(sudo smartctl -A /dev/disk/by-id/$sdc |grep '9 Power' |awk '{print $10}')
+pd=$(sudo smartctl -A /dev/disk/by-id/$sdd |grep '9 Power' |awk '{print $10}')
+pe=$(sudo smartctl -A /dev/disk/by-id/$sde |grep '9 Power' |awk '{print $10}')
+
+ma=$(sudo smartctl -i /dev/disk/by-id/$sda |grep Model: |awk '{print substr($0, index($0,$3))}')
+mb=$(sudo smartctl -i /dev/disk/by-id/$sdb |grep Model: |awk '{print substr($0, index($0,$3))}')
+mc=$(sudo smartctl -i /dev/disk/by-id/$sdc |grep Model: |awk '{print substr($0, index($0,$3))}')
+md=$(sudo smartctl -i /dev/disk/by-id/$sdd |grep Model: |awk '{print substr($0, index($0,$3))}')
+me=$(sudo smartctl -i /dev/disk/by-id/$sde |grep Model: |awk '{print substr($0, index($0,$3))}')
+
+sa=$(sudo smartctl -i /dev/disk/by-id/$sda |grep Number: |awk '{print substr($0, index($0,$3))}')
+sb=$(sudo smartctl -i /dev/disk/by-id/$sdb |grep Number: |awk '{print substr($0, index($0,$3))}')
+sc=$(sudo smartctl -i /dev/disk/by-id/$sdc |grep Number: |awk '{print substr($0, index($0,$3))}')
+sd=$(sudo smartctl -i /dev/disk/by-id/$sdd |grep Number: |awk '{print substr($0, index($0,$3))}')
+se=$(sudo smartctl -i /dev/disk/by-id/$sde |grep Number: |awk '{print substr($0, index($0,$3))}')
+
+ha=$(sudo smartctl -H /dev/disk/by-id/$sda |grep result: |awk '{print substr($0, index($0,$6))}')
+hb=$(sudo smartctl -H /dev/disk/by-id/$sdb |grep result: |awk '{print substr($0, index($0,$6))}')
+hc=$(sudo smartctl -H /dev/disk/by-id/$sdc |grep result: |awk '{print substr($0, index($0,$6))}')
+hd=$(sudo smartctl -H /dev/disk/by-id/$sdd |grep result: |awk '{print substr($0, index($0,$6))}')
+he=$(sudo smartctl -H /dev/disk/by-id/$sde |grep result: |awk '{print substr($0, index($0,$6))}')
+
+tb=$(sudo smartctl -l selftest /dev/disk/by-id/$sdb |grep "# 1")
+tc=$(sudo smartctl -l selftest /dev/disk/by-id/$sdc |grep "# 1")
+td=$(sudo smartctl -l selftest /dev/disk/by-id/$sdd |grep "# 1")
+te=$(sudo smartctl -l selftest /dev/disk/by-id/$sde |grep "# 1")
+
+echo "  <server>" > $xml
+echo "    <name>" >> $xml
+hostname >> $xml
+echo "    </name>" >> $xml
+echo "    <df>" >> $xml
+df -h >> $xml
+echo "_" >> $xml
+cat /proc/mdstat |head -n 4 >> $xml
+echo "    </df>" >> $xml
+echo "    <temperature>" >> $xml
+#f=$(sudo smartctl --all /dev/sdf |grep '194 Temperature_Celsius' |awk '{print $10}')
+echo "SSD: $a || disk1: $b || disk2: $c || disk3: $d || disk4: $e [degC]" >> $xml
+echo -e "SSD  : $ma ($sa)\t: $ha" >> $xml
+echo -e "disk1: $mb ($sb)\t: $hb" >> $xml
+echo "$tb PwrOn = $pb hrs" >> $xml
+echo -e "disk2: $mc ($sc)\t: $hc" >> $xml
+echo "$tc PwrOn = $pc hrs" >> $xml
+echo -e "disk3: $md ($sd)\t: $hd" >> $xml
+echo "$td PwrOn = $pd hrs" >> $xml
+echo -e "disk4: $me ($se)\t: $he" >> $xml
+echo "$te PwrOn = $pe hrs" >> $xml
+echo "    </temperature>" >> $xml
+echo "    <memusage>" >> $xml
+free -h >> $xml
+echo "    </memusage>" >> $xml
+echo "    <uptime>" >> $xml
+uptime >> $xml
+uname -a >> $xml
+ps -e -o pcpu,args | awk 'NR>2' | sort -nr | head -6 | sed 's/&/\&amp;/g' | sed 's/>/\&gt;/g' >> $xml
+echo "    </uptime>" >> $xml
+echo "  </server>" >> $xml

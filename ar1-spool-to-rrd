@@ -1,0 +1,110 @@
+#! /bin/bash
+
+SPOOL=/srv/array1/dataspool
+STORE=/srv/array1/datastore
+
+renice 19 -p $$ >/dev/null
+ionice -c 3 -p $$
+
+echo "" > /tmp/inject.err
+
+# Move the data from the spool-area to the RRD-database in the data-store
+HOST="boson"
+
+# Check for the presence of the 'client.lock' file.
+if [ ! -e $SPOOL/$HOST/client.lock ]; then
+ touch $SPOOL/$HOST/host.lock
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   rrd=${csv/csv/rrd}
+   if [ -e $rrd ]; then
+     /home/beheer/bin/injectrrd.py $data $rrd >>/tmp/inject.err
+   fi
+ done
+fi
+
+HOST="rbian"
+
+# Check for the presence of the 'client.lock' file.
+if [ ! -e $SPOOL/$HOST/client.lock ]; then
+ touch $SPOOL/$HOST/host.lock
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   rrd=${csv/csv/rrd}
+   if [ -e $rrd ]; then
+     /home/beheer/bin/injectrrd.py $data $rrd >>/tmp/inject.err
+   fi
+ done
+fi
+
+HOST="rbups"
+
+# Check for the presence of the 'client.lock' file.
+if [ ! -e $SPOOL/$HOST/client.lock ]; then
+ touch $SPOOL/$HOST/host.lock
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   rrd=${csv/csv/rrd}
+   if [ -e $rrd ]; then
+     /home/beheer/bin/injectrrd.py $data $rrd >>/tmp/inject.err
+   fi
+ done
+fi
+
+HOST="rxbmc"
+
+# Check for the presence of the 'client.lock' file.
+if [ ! -e $SPOOL/$HOST/client.lock ]; then
+ touch $SPOOL/$HOST/host.lock
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   rrd=${csv/csv/rrd}
+   if [ -e $rrd ]; then
+     /home/beheer/bin/injectrrd.py $data $rrd >>/tmp/inject.err
+   fi
+ done
+fi
+
+HOST="neutron"
+
+# Check for the presence of the 'client.lock' file.
+if [ ! -e $SPOOL/$HOST/client.lock ]; then
+ touch $SPOOL/$HOST/host.lock
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   rrd=${csv/csv/rrd}
+   if [ -e $rrd ]; then
+     /home/beheer/bin/injectrrd.py $data $rrd >>/tmp/inject.err
+   fi
+ done
+fi
+
+HOST="rbelec"
+
+# Check for the presence of the 'client.lock' file.
+if [ ! -e $SPOOL/$HOST/client.lock ]; then
+ touch $SPOOL/$HOST/host.lock
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   rrd=${csv/csv/rrd}
+   if [ -e $rrd ]; then
+     /home/beheer/bin/injectrrd.py $data $rrd >>/tmp/inject.err
+   fi
+ done
+fi
+
+HOST="bbone"
+
+# Check for the presence of the 'client.lock' file.
+if [ ! -e $SPOOL/$HOST/client.lock ]; then
+ touch $SPOOL/$HOST/host.lock
+ for data in $SPOOL/$HOST/*.csv; do
+   csv=${data/spool/store}
+   rrd=${csv/csv/rrd}
+   if [ -e $rrd ]; then
+     /home/beheer/bin/injectrrd.py $data $rrd >>/tmp/inject.err
+   fi
+ done
+fi
+
+logger -p local7.info -t dataharvester  "ar1 - Data was added to RRD ($$)"

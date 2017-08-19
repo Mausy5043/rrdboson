@@ -1,0 +1,14 @@
+#! /bin/bash
+
+# Move the images to the webserver
+mv /tmp/boson.*.png   /var/www/status/
+#mv /tmp/rbian.*.png   /var/www/status/
+#mv /tmp/rbups.*.png   /var/www/status/
+#mv /tmp/rbelec.*.png  /var/www/status/
+#mv /tmp/rxbmc.*.png   /var/www/status/
+#mv /tmp/neutron.*.png /var/www/status/
+#mv /tmp/aux.*.png     /var/www/status/
+#mv /tmp/bbone.*.png   /var/www/status/
+
+#cp /var/www/status/* /var/lib/lxc/webserver/rootfs/var/www/html/status/
+#cp /var/www/weer/*   /var/lib/lxc/webserver/rootfs/var/www/html/again/

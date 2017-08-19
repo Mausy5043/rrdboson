@@ -1,0 +1,40 @@
+#! /usr/bin/python
+
+import sys, commands, time
+import os
+os.nice(20)
+
+def main():
+  # Everybody! Remember where we parked! -Capt. Kirk
+  orig_stdout = sys.stdout
+
+  # Define output file
+  f = file('/tmp/17-aux-ambient.csv', 'a')
+  #Redefine system output to our file
+  sys.stdout = f
+
+  # Get the time and date in human-readable form...
+  stsDate, outDate = commands.getstatusoutput("date '+%F %H:%M:%S'")
+  # ... and machine-readable form (UNIX-epoch)
+  stsUxDate, outUxDate =commands.getstatusoutput("date +%s")
+
+
+  stsAmbientT, outAmbientT = commands.getstatusoutput("sudo /srv/array1/rbin/boson/temperv14 -c")
+  if stsAmbientT > 0:
+     time.sleep(7)
+     stsAmbientT, outAmbientT = commands.getstatusoutput("sudo /srv/array1/rbin/boson/temperv14 -c")
+
+  if stsAmbientT > 0:
+     outAmbientT = "NaN"
+
+  # Print the data
+  print '{0}, {1}, {2}'.format(outDate, outUxDate, outAmbientT)
+
+  # Close the file
+  f.close()
+
+  # Re-set the stdout
+  sys.stdout = orig_stdout
+
+if __name__ == "__main__":
+    main()

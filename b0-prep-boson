@@ -1,0 +1,13 @@
+#! /bin/bash
+
+
+STORE=/srv/array1/datastore
+HOST="boson"
+numSamples=2000
+
+for datasrc in $STORE/$HOST/*.csv; do
+  datatgt=${datasrc/.csv/.plt.dat}
+  database=$(basename $datatgt)
+  cat $datasrc* |sort -nk 3 |tail -n $numSamples > $datatgt
+  mv $datatgt /tmp/$database
+done

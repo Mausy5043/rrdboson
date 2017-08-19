@@ -1,0 +1,54 @@
+#! /usr/bin/env gnuplot
+
+reset
+
+set macro
+set datafile missing "NaN"
+set terminal png size 2800,560
+
+infile = "'/tmp/12-load-cpu.plt.dat'"
+outfile = "'/tmp/boson.12-load-cpu.png'"
+
+samples(x) = 6
+avg6(x) = (shift6(x), (back1+back2+back3+back4+back5+back6)/samples($0))
+shift6(x) = (back6 = back5, back5 = back4, back4 = back3, back3 = back2, back2 = back1, back1 = x)
+init(x) = (back1 = back2 = back3 = back4 = back5 = back6 = sum = STATS_mean_y)
+
+stats @infile using 3:5 nooutput
+
+# X-axis
+set xdata time
+set xrange [STATS_min_x-946684800:STATS_max_x-946684800]
+set timefmt '%s'
+set format x '%d-%m'
+
+#Y-axis
+set yrange [0:*]
+
+# Add timestamp
+set timestamp "%Y-%m-%dT%T%z"
+# Define legend
+set key outside center bottom horizontal 
+
+#Styles
+set style line 1 lt rgb "red"    lw 0.1
+set style line 2 lt rgb "orange" lw 0.1
+set style line 3 lt rgb "yellow" lw 0.1
+set style line 4 lt rgb "green"  lw 0.1
+set style line 5 lt rgb "cyan"   lw 0.1 ps 0.2
+set style line 6 lt rgb "blue"   lw 0.1
+set style line 7 lt rgb "violet" lw 0.1
+set style data lines
+
+set grid
+set object 1 rectangle from graph 0,0 to graph 1,1 behind fc rgbcolor "#10000F" lw 0
+
+set output @outfile
+
+#impulses points lines
+
+plot sum = init(0), \
+     @infile using 3:5 with lines ls 3 notitle, \
+          '' using 3:6 with lines ls 1 notitle, \
+          '' using 3:(avg6($5)) with lines ls 3 lw 2 t "10' avg", \
+          '' using 3:(avg6($6)) with lines ls 1 lw 2 t "15' avg"
